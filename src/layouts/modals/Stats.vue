@@ -95,7 +95,16 @@ export default {
           mode: 'index',
         },
         elements: {
-          point: { pointStyle: 'crossRot' }
+          line: {
+            borderWidth: 2,
+            tension: 0.15,
+          },
+          point: {
+            pointStyle: 'circle',
+            radius: 3,
+            hoverRadius: 6,
+            borderWidth: 1,
+          }
         },
         plugins: {
           tooltip: {
@@ -162,14 +171,18 @@ export default {
               label: i18n.global.t('stats.upload'),
               backgroundColor: 'rgba(255, 165, 0, 0.4)',
               borderColor: 'rgba(255, 165, 0)',
-              fill: true,
+              pointBackgroundColor: 'rgba(255, 165, 0)',
+              fill: false,
+              spanGaps: true,
               data: uplinkData
             },
             {
               label: i18n.global.t('stats.download'),
               backgroundColor: 'rgba(0, 128, 0, 0.2)',
               borderColor: 'rgba(0, 128, 0)',
-              fill: true,
+              pointBackgroundColor: 'rgba(0, 128, 0)',
+              fill: false,
+              spanGaps: true,
               data: downlinkData
             }
           ],
