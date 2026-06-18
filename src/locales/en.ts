@@ -50,6 +50,9 @@ export default {
     dns: "DNS",
     admins: "Admins",
     settings: "Settings",
+	config: "Core Config",
+	analytics: "Usage & Stats",
+	logs: "Logs",
   },
   main: {
     tiles: "Tiles",

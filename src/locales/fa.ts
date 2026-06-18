@@ -50,6 +50,9 @@ export default {
     dns: "DNS",
     admins: "ادمین‌ها",
     settings: "پیکربندی",
+	config: "Core Config",
+	analytics: "Usage & Stats",
+	logs: "Logs",
   },
   main: {
     tiles: "کاشی‌ها",

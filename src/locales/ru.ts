@@ -50,6 +50,9 @@ export default {
     dns: "DNS",
     admins: "Администраторы",
     settings: "Настройки",
+	config: "Core Config",
+	analytics: "Usage & Stats",
+	logs: "Logs",
   },
   main: {
     tiles: "Плитки",
@@ -635,6 +638,5 @@ export default {
   },
 }
  
-
 
 

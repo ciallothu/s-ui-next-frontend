@@ -15,7 +15,7 @@
         <div style="text-align: center; margin: 5px;">
           {{ $t('objects.' + resource) + " : " + tag }}
         </div>
-        <v-radio-group v-model="limit" @change="loadData" density="compact" :loading="loading" inline hide-details>
+        <v-radio-group v-model="limit" @change="changePeriod" density="compact" :loading="loading" inline hide-details>
           <v-radio v-for="p in periods" :label="p.title" :value="p.value"></v-radio>
         </v-radio-group>
           <v-container id="container" style="height:40vh;">
@@ -76,6 +76,7 @@ export default {
       intervalId: <any>0,
       limit: 1,
       periods: [
+		{ value: 'live', title: 'Live' },
         { value: 1, title: i18n.global.n(1) + i18n.global.t('date.h')},
         { value: 6, title: i18n.global.n(6) + i18n.global.t('date.h')},
         { value: 12, title: i18n.global.n(12) + i18n.global.t('date.h')},
@@ -140,11 +141,12 @@ export default {
   methods: {
     async loadData() {
       this.loading = true
-      const data = await HttpUtils.get('api/stats', { resource: this.resource, tag: this.tag, limit: this.limit })
+	  const requestLimit = this.limit === 'live' ? 1 : Number(this.limit)
+      const data = await HttpUtils.get('api/stats', { resource: this.resource, tag: this.tag, limit: requestLimit })
       if (data.success && data.obj) {
         const obj = <any[]>data.obj
         const l = String(i18n.global.locale) == 'fa' ? "fa-IR" : "en-US"
-        const oneStep = this.limit * 3600 * 1000 / 360 // Each 10 sec
+		const oneStep = requestLimit * 3600 * 1000 / 360
         const now = new Date().getTime()
         const steps = <number[]>[]
         for (let i = 360; i >= 0; i--) {
@@ -195,6 +197,16 @@ export default {
       }
       this.loading = false
     },
+	changePeriod() {
+	  if (this.intervalId) {
+		clearInterval(this.intervalId)
+		this.intervalId = 0
+	  }
+	  this.loadData()
+	  if (this.limit === 'live') {
+		this.intervalId = setInterval(() => this.loadData(), 10000)
+	  }
+	},
     genLable(step:number, locale: string) {
       return new Date(step).toLocaleString(locale,{
         month: '2-digit',
@@ -210,9 +222,6 @@ export default {
       if (v) {
         this.limit = 1
         this.loadData()
-        this.intervalId = setInterval(() => {
-          this.loadData()
-        }, 10000)
       } else {
         this.loaded = false
         this.alert = false
@@ -223,6 +232,7 @@ export default {
         }
         if (this.intervalId && this.intervalId != 0) {
           clearInterval(this.intervalId)
+		  this.intervalId = 0
         }
       }
     }

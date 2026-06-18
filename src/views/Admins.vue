@@ -64,6 +64,7 @@
       </v-card>
     </v-col>
   </v-row>
+  <SecuritySettings />
 </template>
 
 <script lang="ts" setup>
@@ -73,6 +74,7 @@ import TokenModal from '@/layouts/modals/Token.vue'
 import { i18n } from '@/locales'
 import HttpUtils from '@/plugins/httputil'
 import { Ref, ref, inject, onMounted } from 'vue'
+import SecuritySettings from '@/components/SecuritySettings.vue'
 
 const loading:Ref = inject('loading')?? ref(false)
 
@@ -89,6 +91,7 @@ const loadData = async () => {
   const msg = await HttpUtils.get('api/users')
   loading.value = false
   if (msg.success) {
+	users.value = []
     msg.obj.forEach((u:any) => {
       const lastLogin = u.lastLogin.split(" ")
       const localLastLogin = lastLogin.length > 2 ? dateFormatted(Date.parse(lastLogin[0] + " " + lastLogin[1])) : "- -"

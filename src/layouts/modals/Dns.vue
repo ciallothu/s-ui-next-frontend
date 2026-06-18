@@ -6,6 +6,7 @@
       </v-card-title>
       <v-divider></v-divider>
       <v-card-text>
+		<div class="d-flex justify-end pt-2"><JsonObjectEditor v-model="dnsServer" /></div>
         <v-row>
           <v-col cols="12" sm="6" md="4">
             <v-select

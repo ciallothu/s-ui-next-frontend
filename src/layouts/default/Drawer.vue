@@ -50,15 +50,15 @@ const showDrawer = computed((): boolean => {
 
 const menu = [
   { title: 'pages.home', icon: 'mdi-home',  path: '/' },
-  { title: 'pages.inbounds', icon: 'mdi-cloud-download',  path: '/inbounds' },
   { title: 'pages.clients', icon: 'mdi-account-multiple',  path: '/clients' },
+	{ title: 'pages.inbounds', icon: 'mdi-cloud-download',  path: '/inbounds' },
   { title: 'pages.outbounds', icon: 'mdi-cloud-upload',  path: '/outbounds' },
   { title: 'pages.endpoints', icon: 'mdi-cloud-tags',  path: '/endpoints' },
   { title: 'pages.services', icon: 'mdi-server',  path: '/services' },
   { title: 'pages.tls', icon: 'mdi-certificate',  path: '/tls' },
-  { title: 'pages.basics', icon: 'mdi-application-cog',  path: '/basics' },
-  { title: 'pages.rules', icon: 'mdi-routes',  path: '/rules' },
-  { title: 'pages.dns', icon: 'mdi-dns',  path: '/dns' },
+	{ title: 'pages.config', icon: 'mdi-tune-variant',  path: '/config' },
+	{ title: 'pages.analytics', icon: 'mdi-chart-line',  path: '/analytics' },
+	{ title: 'pages.logs', icon: 'mdi-text-box-search-outline',  path: '/logs' },
   { title: 'pages.admins', icon: 'mdi-account-tie',  path: '/admins' },
   { title: 'pages.settings', icon: 'mdi-cog',  path: '/settings' },
 ]

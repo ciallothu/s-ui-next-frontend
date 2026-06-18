@@ -45,9 +45,9 @@ const routes = [
         component: () => import('@/views/Endpoints.vue'),
       },
       {
-        path: '/rules',
-        name: 'pages.rules',
-        component: () => import('@/views/Rules.vue'),
+		path: '/config',
+		name: 'pages.config',
+		component: () => import('@/views/CoreConfig.vue'),
       },
       {
         path: '/tls',
@@ -55,14 +55,14 @@ const routes = [
         component: () => import('@/views/Tls.vue'),
       },
       {
-        path: '/basics',
-        name: 'pages.basics',
-        component: () => import('@/views/Basics.vue'),
+		path: '/analytics',
+		name: 'pages.analytics',
+		component: () => import('@/views/Analytics.vue'),
       },
       {
-        path: '/dns',
-        name: 'pages.dns',
-        component: () => import('@/views/Dns.vue'),
+		path: '/logs',
+		name: 'pages.logs',
+		component: () => import('@/views/Logs.vue'),
       },
       {
         path: '/admins',
@@ -72,8 +72,11 @@ const routes = [
       {
         path: '/settings',
         name: 'pages.settings',
-        component: () => import('@/views/Settings.vue'),
+		component: () => import('@/views/SettingsTools.vue'),
       },
+	  { path: '/basics', redirect: '/config' },
+	  { path: '/dns', redirect: '/config' },
+	  { path: '/rules', redirect: '/config' },
     ],
   },
 ]

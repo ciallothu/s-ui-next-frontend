@@ -12,6 +12,7 @@
           v-if="loading"
         ></v-skeleton-loader>
       <v-card-text style="padding: 0 16px; overflow-y: scroll;">
+		<div class="d-flex justify-end pt-2"><JsonObjectEditor v-model="inbound" /></div>
         <v-container style="padding: 0;" :hidden="loading">
           <v-row>
             <v-col cols="12" sm="6" md="4">

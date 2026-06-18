@@ -8,8 +8,11 @@
               <v-form @submit.prevent="login" ref="form">
                 <v-text-field v-model="username" :label="$t('login.username')" :rules="usernameRules" required></v-text-field>
                 <v-text-field v-model="password" :label="$t('login.password')" :rules="passwordRules" type="password" required></v-text-field>
+				<v-text-field v-if="requires2FA" v-model="otp" label="TOTP / Recovery code" autocomplete="one-time-code" autofocus required></v-text-field>
                 <v-btn :loading="loading" type="submit" color="primary" block class="mt-2" v-text="$t('actions.submit')"></v-btn>
               </v-form>
+			  <v-btn v-if="authMethods.passkey" :disabled="!username" :loading="loading" block variant="tonal" class="mt-2" prepend-icon="mdi-passkey" @click="passkeyLogin">Passkey</v-btn>
+			  <v-btn v-if="authMethods.oidc" :loading="loading" block variant="outlined" class="mt-2" prepend-icon="mdi-login-variant" @click="oidcLogin">OIDC / SSO</v-btn>
               <v-select
                 density="compact"
                 class="mt-2"
@@ -45,13 +48,14 @@
       </v-row>
     </v-container>
   </template>
-  
+
 <script lang="ts" setup>
-import { ref } from "vue"
+import { onMounted, ref } from "vue"
 import { useLocale,useTheme } from 'vuetify'
 import { i18n, languages } from '@/locales'
 import { useRouter } from 'vue-router'
 import HttpUtil from '@/plugins/httputil'
+import { loginWithPasskey } from '@/plugins/webauthn'
 
 
 const theme = useTheme()
@@ -80,19 +84,48 @@ const passwordRules = [
 ]
 
 const loading = ref(false)
+const otp = ref('')
+const requires2FA = ref(false)
+const authMethods = ref({ oidc: false, passkey: false, totp: true })
 const router = useRouter()
+
+onMounted(async () => {
+  const response = await HttpUtil.get('api/auth-meta')
+  if (response.success && response.obj) authMethods.value = { ...authMethods.value, ...response.obj }
+})
 
 const login = async () => {
   if (username.value == '' || password.value == '') return
   loading.value=true
-  const response = await HttpUtil.post('api/login',{user: username.value, pass: password.value})
+  const response = await HttpUtil.post('api/login',{user: username.value, pass: password.value, otp: otp.value})
   if(response.success){
+	if (response.obj?.requires2FA) {
+	  requires2FA.value = true
+	  loading.value = false
+	  return
+	}
     setTimeout(() => {
       loading.value=false
       router.push('/')
     }, 500)
   } else {
     loading.value=false
+  }
+}
+const oidcLogin = async () => {
+  loading.value = true
+  const response = await HttpUtil.get('api/oidc-start')
+  loading.value = false
+  if (response.success && response.obj?.url) window.location.assign(response.obj.url)
+}
+const passkeyLogin = async () => {
+  if (!username.value) return
+  loading.value = true
+  try {
+	await loginWithPasskey(username.value.trim())
+	await router.push('/')
+  } finally {
+	loading.value = false
   }
 }
 const changeLocale = (l: any) => {
@@ -108,4 +141,3 @@ const isActiveTheme = (th: string) => {
   return current == th
 }
 </script>
-  

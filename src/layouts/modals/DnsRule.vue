@@ -6,6 +6,7 @@
       </v-card-title>
       <v-divider></v-divider>
       <v-card-text style="padding: 0 16px;">
+		<div class="d-flex justify-end pt-2"><JsonObjectEditor v-model="ruleData" /></div>
         <v-row>
           <v-col cols="12" sm="6" md="4">
             <v-switch color="primary" v-model="logical" :label="$t('rule.logical')" hide-details></v-switch>

@@ -22,6 +22,7 @@ import { registerPlugins } from '@/plugins'
 // Locale
 import { i18n } from '@/locales'
 import Vue3PersianDatetimePicker from 'vue3-persian-datetime-picker'
+import JsonObjectEditor from '@/components/JsonObjectEditor.vue'
 
 // Notivue
 import { createNotivue } from 'notivue'
@@ -52,4 +53,5 @@ app
   .use(i18n)
   .use(notivue)
   .component('DatePicker', Vue3PersianDatetimePicker)
+  .component('JsonObjectEditor', JsonObjectEditor)
   .mount('#app')

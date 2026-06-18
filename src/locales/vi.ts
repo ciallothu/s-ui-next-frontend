@@ -50,6 +50,9 @@ export default {
     dns: "DNS",
     admins: "Quản trị viên",
     settings: "Cài đặt",
+	config: "Core Config",
+	analytics: "Usage & Stats",
+	logs: "Logs",
   },
   main: {
     tiles: "OHB",

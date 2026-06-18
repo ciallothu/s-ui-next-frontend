@@ -50,6 +50,9 @@ export default {
     dns: "DNS",
     admins: "管理员",
     settings: "设置",
+	config: "核心配置",
+	analytics: "用量与统计",
+	logs: "日志",
   },
   main: {
     tiles: "信息卡",

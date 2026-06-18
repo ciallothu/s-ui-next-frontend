@@ -6,6 +6,7 @@
       </v-card-title>
       <v-divider></v-divider>
       <v-card-text style="padding: 0 16px; overflow-y: scroll;">
+		<div class="d-flex justify-end pt-2"><JsonObjectEditor v-model="tls" /></div>
         <v-card class="rounded-lg">
           <v-row>
             <v-col cols="12" sm="6" md="4">
