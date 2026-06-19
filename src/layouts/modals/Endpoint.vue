@@ -44,11 +44,19 @@
         </v-btn>
         <v-btn
           color="primary"
-          variant="tonal"
+          variant="outlined"
           :loading="loading"
-          @click="saveChanges"
+          @click="saveChanges(false)"
         >
           {{ $t('actions.save') }}
+        </v-btn>
+        <v-btn
+          color="primary"
+          variant="tonal"
+          :loading="loading"
+          @click="saveChanges(true)"
+        >
+          {{ $t('actions.saveApply') }}
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -66,6 +74,59 @@ import HttpUtils from '@/plugins/httputil'
 import { push } from 'notivue'
 import { i18n } from '@/locales'
 import Data from '@/store/modules/data'
+
+function cidrHost(cidr: string, hostIndex: number): string {
+  const [address, bitsText] = String(cidr || '').trim().split('/')
+  const bits = Number(bitsText)
+  const ipv6 = address?.includes(':')
+  const width = ipv6 ? 128 : 32
+  if (!address || !Number.isInteger(bits) || bits < 0 || bits > width) return ''
+
+  let value = 0n
+  if (ipv6) {
+    const halves = address.split('::')
+    if (halves.length > 2) return ''
+    const left = halves[0] ? halves[0].split(':') : []
+    const right = halves.length === 2 && halves[1] ? halves[1].split(':') : []
+    const missing = 8 - left.length - right.length
+    if (missing < 0 || (halves.length === 1 && missing !== 0)) return ''
+    const groups = [...left, ...Array(missing).fill('0'), ...right]
+    for (const group of groups) {
+      const parsed = Number.parseInt(group || '0', 16)
+      if (!Number.isInteger(parsed) || parsed < 0 || parsed > 0xffff) return ''
+      value = (value << 16n) | BigInt(parsed)
+    }
+  } else {
+    const parts = address.split('.').map(part => Number(part))
+    if (parts.length !== 4 || parts.some(part => !Number.isInteger(part) || part < 0 || part > 255)) return ''
+    for (const part of parts) value = (value << 8n) | BigInt(part)
+  }
+
+  const hostBits = BigInt(width - bits)
+  const hostCount = 1n << hostBits
+  const offset = BigInt(hostIndex)
+  if (offset < 1n || offset >= hostCount || (!ipv6 && offset === hostCount - 1n)) return ''
+  const network = (value >> hostBits) << hostBits
+  const host = network + offset
+  if (!ipv6) {
+    const parts = [24n, 16n, 8n, 0n].map(shift => Number((host >> shift) & 255n))
+    return `${parts.join('.')}/32`
+  }
+  const groups: string[] = []
+  for (let shift = 112n; shift >= 0n; shift -= 16n) groups.push(((host >> shift) & 0xffffn).toString(16))
+  return `${groups.join(':')}/128`
+}
+
+function canonicalHostPrefix(value: string): string {
+  const [address, prefix = ''] = String(value || '').trim().split('/')
+  if (!address.includes(':')) return `${address}/${prefix}`
+  try {
+    return `${new URL(`http://[${address}]/`).hostname.slice(1, -1).toLowerCase()}/${prefix}`
+  } catch {
+    return `${address.toLowerCase()}/${prefix}`
+  }
+}
+
 export default {
   props: ['visible', 'data', 'id', 'tags'],
   emits: ['close'],
@@ -102,11 +163,22 @@ export default {
       switch (this.endpoint.type) {
         case EpTypes.Wireguard:
           const wgKeys = (await this.genWgKey())
-          const randomIPoctet = RandomUtil.randomIntRange(1, 255)
+          const listenPort = this.endpoint.listen_port ?? RandomUtil.randomIntRange(10000, 60000)
           prevConfig = {
             tag: tag,
-            listen_port: this.endpoint.listen_port ?? RandomUtil.randomIntRange(10000, 60000),
-            address: ['10.0.0.'+ randomIPoctet.toString() +'/32','fe80::'+ randomIPoctet.toString(16) +'/128'],
+            wireguard_schema: 2,
+            listen_port: listenPort,
+            address: ['10.66.66.1/32', 'fd66:66:66::1/128'],
+            tunnel_ipv4_cidr: '10.66.66.0/24',
+            tunnel_ipv6_cidr: 'fd66:66:66::/64',
+            advertised_endpoint_host: '',
+            advertised_endpoint_port: listenPort,
+            peer_to_peer_enabled: false,
+            default_client_allowed_ips: ['10.66.66.0/24', 'fd66:66:66::/64'],
+            default_client_dns: [],
+            default_client_mtu: 1420,
+            default_client_keepalive: 25,
+            system: false,
             private_key: wgKeys.private_key,
             peers: [],
             ext: {
@@ -130,7 +202,7 @@ export default {
       this.updateData(0) // reset
       this.$emit('close')
     },
-    async saveChanges() {
+    async saveChanges(apply = true) {
       if (!this.$props.visible) return
       
       // check duplicate tag
@@ -139,7 +211,7 @@ export default {
 
       // save data
       this.loading = true
-      const success = await Data().save("endpoints", this.$props.id == 0 ? "new" : "edit", this.endpoint)
+      const success = await Data().save("endpoints", this.$props.id == 0 ? "new" : "edit", this.endpoint, undefined, apply)
       if (success) this.closeModal()
       this.loading = false
     },
@@ -187,19 +259,40 @@ export default {
       const newKeys = await this.genWgKey()
       if (!this.endpoint.ext) this.endpoint.ext = {keys: []}
       this.endpoint.ext.keys.push(newKeys)
+      const assignedIPv4 = this.findFreeIP(false)
+      const assignedIPv6 = this.findFreeIP(true)
       this.endpoint.peers.push({
+        name: this.$t('types.wg.peer') + ' ' + (this.endpoint.peers.length + 1),
+        peer_mode: 'roaming_client',
         public_key: newKeys.public_key,
-        allowed_ips: [this.findFreeIP()]
+        client_private_key: newKeys.private_key,
+        assigned_ipv4: assignedIPv4,
+        assigned_ipv6: assignedIPv6,
+        server_allowed_ips: [assignedIPv4, assignedIPv6],
+        allowed_ips: [assignedIPv4, assignedIPv6],
+        client_route_preset: 'virtual_network',
+        client_allowed_ips: [this.endpoint.tunnel_ipv4_cidr, this.endpoint.tunnel_ipv6_cidr].filter(Boolean),
+        client_dns: [...(this.endpoint.default_client_dns || [])],
+        client_mtu: this.endpoint.default_client_mtu || this.endpoint.mtu || 1420,
+        client_keepalive: this.endpoint.default_client_keepalive || 25,
+        include_ipv4: Boolean(this.endpoint.tunnel_ipv4_cidr),
+        include_ipv6: Boolean(this.endpoint.tunnel_ipv6_cidr),
       })
       this.loading = false
     },
-    findFreeIP(): string{
-      const peerAllowedIPs = this.endpoint.peers.map((peer: any) => peer.allowed_ips).flat()
-      for (let i = 2; i < 255; i++) {
-        const newIP = '10.0.1.'+ i.toString() +'/32'
-        if (!peerAllowedIPs.includes(newIP)) return newIP
+    findFreeIP(ipv6: boolean): string{
+      const used = new Set(([
+        ...(this.endpoint.address || []),
+        ...this.endpoint.peers.flatMap((peer: any) => peer.server_allowed_ips || peer.allowed_ips || []),
+      ] as string[]).map(canonicalHostPrefix))
+      const cidr = ipv6 ? this.endpoint.tunnel_ipv6_cidr : this.endpoint.tunnel_ipv4_cidr
+      const limit = ipv6 ? 65536 : 65536
+      for (let i = 2; i < limit; i++) {
+        const newIP = cidrHost(cidr, i)
+        if (!newIP) break
+        if (!used.has(canonicalHostPrefix(newIP))) return newIP
       }
-      return '0.0.0.0/0'
+      return ''
     },
     delWgPeer(index: number){
       if (this.endpoint.type != EpTypes.Wireguard) return
@@ -213,6 +306,8 @@ export default {
       const indexKeys = this.endpoint.ext.keys.findIndex((key: any) => key.public_key == this.endpoint.peers[index].public_key)
       this.endpoint.ext.keys[indexKeys == -1 ? this.endpoint.ext.keys.length : indexKeys] = newKeys
       this.endpoint.peers[index].public_key = newKeys.public_key
+      this.endpoint.peers[index].client_private_key = newKeys.private_key
+      this.endpoint.peers[index].client_private_key_set = true
       this.loading = false
     },
   },

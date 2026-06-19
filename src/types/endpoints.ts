@@ -15,22 +15,48 @@ interface EndpointBasics {
 }
 
 export interface WgPeer {
-  address: string
-  port: number
+  name?: string
+  peer_mode?: 'roaming_client' | 'static_peer' | 'site_to_site'
+  address?: string
+  port?: number
+  static_remote_address?: string
+  static_remote_port?: number
   public_key: string
   pre_shared_key?: string
   allowed_ips?: string[]
+  server_allowed_ips?: string[]
+  assigned_ipv4?: string
+  assigned_ipv6?: string
+  client_private_key?: string
+  client_private_key_set?: boolean
+  client_allowed_ips?: string[]
+  client_dns?: string[]
+  client_mtu?: number
+  client_keepalive?: number
+  client_route_preset?: 'virtual_network' | 'single_peer' | 'custom' | 'full_tunnel'
+  include_ipv4?: boolean
+  include_ipv6?: boolean
   persistent_keepalive_interval?: number
   reserved?: number[]
 }
 
 export interface WireGuard extends EndpointBasics, Dial {
+  wireguard_schema?: number
   system?: boolean
   name?: string
   mtu?: number
   address: string[]
   private_key: string
   listen_port: number
+  tunnel_ipv4_cidr?: string
+  tunnel_ipv6_cidr?: string
+  advertised_endpoint_host?: string
+  advertised_endpoint_port?: number
+  peer_to_peer_enabled?: boolean
+  default_client_allowed_ips?: string[]
+  default_client_dns?: string[]
+  default_client_mtu?: number
+  default_client_keepalive?: number
   peers: WgPeer[]
   udp_timeout?: string
   workers?: number
@@ -71,7 +97,25 @@ export type Endpoint = InterfaceMap[keyof InterfaceMap]
 
 // Create defaultValues object dynamically
 const defaultValues: Record<EpType, Endpoint> = {
-  wireguard: { type: EpTypes.Wireguard, address: ['10.0.0.2/32','fe80::2/128'], private_key: '', listen_port: 0 },
+  wireguard: {
+    type: EpTypes.Wireguard,
+    wireguard_schema: 2,
+    address: ['10.66.66.1/32', 'fd66:66:66::1/128'],
+    tunnel_ipv4_cidr: '10.66.66.0/24',
+    tunnel_ipv6_cidr: 'fd66:66:66::/64',
+    advertised_endpoint_host: '',
+    advertised_endpoint_port: 0,
+    peer_to_peer_enabled: false,
+    default_client_allowed_ips: ['10.66.66.0/24', 'fd66:66:66::/64'],
+    default_client_dns: [],
+    default_client_mtu: 1420,
+    default_client_keepalive: 25,
+    system: false,
+    private_key: '',
+    listen_port: 0,
+    peers: [],
+    ext: { keys: [] },
+  },
   warp: { type: EpTypes.Warp, address: [], private_key: '', listen_port: 0, mtu: 1420, peers: [{ address: '', port: 0, public_key: ''}] },
   tailscale: { type: EpTypes.Tailscale, domain_resolver: 'local' },
 }

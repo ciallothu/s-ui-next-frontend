@@ -66,12 +66,13 @@ const Data = defineStore('Data', {
       }
       return <Client>{}
     },
-    async save (object: string, action: string, data: any, initUsers?: number[]): Promise<boolean> {
+    async save (object: string, action: string, data: any, initUsers?: number[], apply = true): Promise<boolean> {
       let postData = {
         object: object,
         action: action,
         data: JSON.stringify(data, null, 2),
-        initUsers: initUsers?.join(',') ?? undefined
+        initUsers: initUsers?.join(',') ?? undefined,
+        apply: apply,
       }
       const msg = await HttpUtils.post('api/save', postData)
       if (msg.success) {

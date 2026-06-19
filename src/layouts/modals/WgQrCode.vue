@@ -3,16 +3,16 @@
     <v-card class="rounded-lg" id="qrcode-modal" :loading="loading">
       <v-card-title>
         <v-row>
-          <v-col>Wireguard QrCode</v-col>
+          <v-col>{{ $t('types.wg.qrTitle') }}</v-col>
           <v-spacer></v-spacer>
           <v-col cols="auto"><v-icon icon="mdi-close-box" @click="$emit('close')" /></v-col>
         </v-row>
       </v-card-title>
       <v-divider></v-divider>
-      <v-row v-for="l, i in wgLinks">
-        <v-col style="text-align: center;" v-if="l.length>0">
-          <v-chip>{{ $t('types.wg.peer') + ' ' + (i+1) }}</v-chip> <v-icon icon="mdi-download" @click="download(l,i)" /><br />
-          <QrcodeVue :value="l" :size="size" @click="copyToClipboard(l)" :margin="1" style="border-radius: .5rem; cursor: copy;" />
+      <v-row v-for="item in wgLinks" :key="item.filename">
+        <v-col style="text-align: center;" v-if="item.config.length>0">
+          <v-chip>{{ item.name }}</v-chip> <v-icon icon="mdi-download" @click="download(item.config, item.filename)" /><br />
+          <QrcodeVue :value="item.config" :size="size" @click="copyToClipboard(item.config)" :margin="1" style="border-radius: .5rem; cursor: copy;" />
         </v-col>
       </v-row>
     </v-card>
@@ -24,13 +24,14 @@ import QrcodeVue from 'qrcode.vue'
 import Clipboard from 'clipboard'
 import { i18n } from '@/locales'
 import { push } from 'notivue'
+import HttpUtils from '@/plugins/httputil'
 
 export default {
   props: ['data', 'visible'],
   data() {
     return {
       wgData: <any>{},
-      wgLinks: <string[]>[],
+      wgLinks: <Array<{ name: string, filename: string, config: string }>>[],
       loading: false,
     }
   },
@@ -38,34 +39,12 @@ export default {
     async load() {
       this.wgData = this.$props.data
       this.wgLinks = []
-      const address = location.hostname
-      this.wgData.peers.forEach((_: any, index: number) => {
-        this.wgLinks.push(this.getWireguardLink(index, address))
-      })
-    },
-    getWireguardLink(peerId: number, address: string) {
-      const peerData = this.wgData.peers[peerId]
-      const keys = this.wgData.ext?.keys?.find((key: any) => key.public_key == peerData.public_key)
-      if (!keys || !this.wgData.ext?.public_key) return ''
-      let txt = `[Interface]\n`
-      txt += `PrivateKey = ${keys.private_key}\n`
-      txt += `Address = ${peerData.allowed_ips.join(',')}\n`
-      txt += `DNS = ${this.wgData.ext?.dns?.length>0 ? this.wgData.ext.dns : '1.1.1.1, 9.9.9.9'}\n`
-      if (this.wgData.mtu) {
-          txt += `MTU = ${this.wgData.mtu}\n`
+      this.loading = true
+      for (let index = 0; index < (this.wgData.peers || []).length; index++) {
+        const response = await HttpUtils.post('api/wireguardExport', { tag: this.wgData.tag, peerIndex: index })
+        if (response.success && response.obj?.config) this.wgLinks.push(response.obj)
       }
-      txt += `\n# ${this.wgData.tag} - ${peerId}\n`
-      txt += `[Peer]\n`
-      txt += `PublicKey = ${this.wgData.ext.public_key}\n`
-      txt += `AllowedIPs = 0.0.0.0/0, ::/0\n`
-      txt += `Endpoint = ${address}:${this.wgData.listen_port}\n`
-      if (peerData.pre_shared_key) {
-          txt += `\nPresharedKey = ${peerData.pre_shared_key}`
-      }
-      if (peerData.persistent_keepalive_interval) {
-          txt += `\nPersistentKeepalive = ${peerData.persistent_keepalive_interval}\n`
-      }
-      return txt;
+      this.loading = false
     },
     copyToClipboard(txt:string) {
       const hiddenButton = document.createElement('button')
@@ -97,10 +76,9 @@ export default {
       hiddenButton.click()
       document.body.removeChild(hiddenButton)
     },
-    download(text: string, i: number) {
-      let filename = this.wgData.tag + '_peer_' + (i+1) + '.conf';
+    download(text: string, filename: string) {
       let element = document.createElement('a');
-      element.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(text));
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
       element.setAttribute('download', filename);
 
       element.style.display = 'none';
