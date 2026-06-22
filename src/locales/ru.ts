@@ -701,7 +701,7 @@ export default {
     subscriptionSubtitle: "Импорт внешней подписки",
     generateKeyPairs: "Создать пары ключей",
     keyPairsSubtitle: "Reality, WireGuard, TLS и ECH",
-    serviceActions: "Действия сервиса",
+    serviceActions: "Быстрые действия",
     restartSingbox: "Перезапустить sing-box",
     restartSingboxSubtitle: "Перезагрузить конфигурацию ядра",
     restartPanel: "Перезапустить S-UI",

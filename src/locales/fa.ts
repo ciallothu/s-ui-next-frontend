@@ -700,7 +700,7 @@ export default {
     subscriptionSubtitle: "وارد کردن سابسکریپشن خارجی",
     generateKeyPairs: "تولید جفت‌کلید",
     keyPairsSubtitle: "Reality، WireGuard، TLS و ECH",
-    serviceActions: "عملیات سرویس",
+    serviceActions: "کارهای سریع",
     restartSingbox: "راه‌اندازی مجدد sing-box",
     restartSingboxSubtitle: "بارگذاری دوباره تنظیمات هسته",
     restartPanel: "راه‌اندازی مجدد S-UI",

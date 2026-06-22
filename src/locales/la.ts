@@ -146,7 +146,7 @@ export default {
     subscriptionSubtitle: "Subscriptionem externam importa",
     generateKeyPairs: "Paria clavium genera",
     keyPairsSubtitle: "Reality, WireGuard, TLS et ECH",
-    serviceActions: "Actiones servitii",
+    serviceActions: "Actiones celeres",
     restartSingbox: "sing-box iterum incipere",
     restartSingboxSubtitle: "Configurationem nuclei reonerare",
     restartPanel: "S-UI iterum incipere",
@@ -200,7 +200,7 @@ export default {
   },
   logsView: {
     title: "Acta",
-    subtitle: "Filtra acta tempore, usuario, gravitate aut verbo.",
+    subtitle: "Filtra acta tempore, usore, gradu aut verbo.",
     search: "Quaerere",
     user: "Usor",
     level: "Gradus",

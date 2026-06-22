@@ -167,7 +167,7 @@ export default {
     subscriptionSubtitle: "外部サブスクリプションをインポート",
     generateKeyPairs: "キーペア生成",
     keyPairsSubtitle: "Reality、WireGuard、TLS、ECH",
-    serviceActions: "サービス操作",
+    serviceActions: "よく使う操作",
     restartSingbox: "sing-box を再起動",
     restartSingboxSubtitle: "コア設定を再読み込み",
     restartPanel: "S-UI を再起動",
@@ -221,7 +221,7 @@ export default {
   },
   logsView: {
     title: "ログ",
-    subtitle: "時刻、ユーザー、重要度、キーワードでログを絞り込みます。",
+    subtitle: "時刻、ユーザー、レベル、キーワードでログを絞り込みます。",
     search: "検索",
     user: "ユーザー",
     level: "レベル",

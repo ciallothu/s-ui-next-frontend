@@ -709,7 +709,7 @@ export default {
     subscriptionSubtitle: "匯入外部訂閱",
     generateKeyPairs: "產生密鑰對",
     keyPairsSubtitle: "Reality、WireGuard、TLS 和 ECH",
-    serviceActions: "服務操作",
+    serviceActions: "常用操作",
     restartSingbox: "重啟 sing-box",
     restartSingboxSubtitle: "重新載入核心設定",
     restartPanel: "重啟 S-UI",

@@ -759,7 +759,7 @@ export default {
     subscriptionSubtitle: "Import an external subscription",
     generateKeyPairs: "Generate key pairs",
     keyPairsSubtitle: "Reality, WireGuard, TLS and ECH",
-    serviceActions: "Service actions",
+    serviceActions: "Quick actions",
     restartSingbox: "Restart sing-box",
     restartSingboxSubtitle: "Reload core configuration",
     restartPanel: "Restart S-UI",
@@ -813,7 +813,7 @@ export default {
   },
   logsView: {
     title: "Logs",
-    subtitle: "Filter logs by time, user, severity or keyword.",
+    subtitle: "Filter logs by time, user, level or keyword.",
     search: "Search",
     user: "User",
     level: "Level",

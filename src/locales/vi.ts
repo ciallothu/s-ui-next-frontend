@@ -700,7 +700,7 @@ export default {
     subscriptionSubtitle: "Nhập subscription bên ngoài",
     generateKeyPairs: "Tạo cặp khóa",
     keyPairsSubtitle: "Reality, WireGuard, TLS và ECH",
-    serviceActions: "Thao tác dịch vụ",
+    serviceActions: "Thao tác nhanh",
     restartSingbox: "Khởi động lại sing-box",
     restartSingboxSubtitle: "Tải lại cấu hình lõi",
     restartPanel: "Khởi động lại S-UI",

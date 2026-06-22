@@ -146,7 +146,7 @@ export default {
     subscriptionSubtitle: "Importer un abonnement externe",
     generateKeyPairs: "Générer des paires de clés",
     keyPairsSubtitle: "Reality, WireGuard, TLS et ECH",
-    serviceActions: "Actions de service",
+    serviceActions: "Actions rapides",
     restartSingbox: "Redémarrer sing-box",
     restartSingboxSubtitle: "Recharger la configuration cœur",
     restartPanel: "Redémarrer S-UI",
@@ -200,7 +200,7 @@ export default {
   },
   logsView: {
     title: "Journaux",
-    subtitle: "Filtrez les journaux par date, utilisateur, gravité ou mot-clé.",
+    subtitle: "Filtrez les journaux par date, utilisateur, niveau ou mot-clé.",
     search: "Recherche",
     user: "Utilisateur",
     level: "Niveau",
