@@ -56,12 +56,12 @@
             </v-col>
           </v-row>
           <v-table density="compact" hover class="mt-4">
-            <thead><tr><th>{{ $t('logsView.time') }}</th><th>{{ $t('analytics.resource') }}</th><th>{{ $t('analytics.user') }}</th><th>{{ $t('analytics.remote') }}</th><th>{{ $t('analytics.event') }}</th></tr></thead>
+            <thead><tr><th>{{ $t('logsView.time') }}</th><th>{{ $t('analytics.resource') }}</th><th>{{ $t('analytics.user') }}</th><th>{{ $t('analytics.destination') }}</th><th>{{ $t('analytics.event') }}</th></tr></thead>
             <tbody>
               <tr v-for="(item, index) in connectionItems" :key="`${item.timestamp}-${index}`">
                 <td>{{ item.time || formatTime(item.timestamp) }}</td><td>{{ item.resource }}/{{ item.protocol }}[{{ item.tag }}]</td><td>{{ item.user || '—' }}</td>
                 <td>
-                  <div>{{ item.destination || item.source || item.remote || '—' }}</div>
+                  <div>{{ item.destination || item.source || '—' }}</div>
                   <div v-if="connectionMeta(item)" class="text-caption text-medium-emphasis">{{ connectionMeta(item) }}</div>
                 </td>
                 <td><v-btn size="small" variant="text" @click="openConnectionLog(item)">{{ $t('analytics.viewLog') }}</v-btn></td>
@@ -128,7 +128,6 @@
           <v-col cols="12" md="6"><strong>{{ $t('analytics.user') }}:</strong> {{ selectedConnection.user || '—' }}</v-col>
           <v-col cols="12" md="6"><strong>{{ $t('analytics.destination') }}:</strong> {{ selectedConnection.destination || '—' }}</v-col>
           <v-col cols="12" md="6"><strong>{{ $t('analytics.source') }}:</strong> {{ selectedConnection.source || '—' }}</v-col>
-          <v-col cols="12" md="6"><strong>{{ $t('analytics.remote') }}:</strong> {{ selectedConnection.remote || '—' }}</v-col>
         </v-row>
         <v-row v-for="section in endpointSections(selectedConnection)" :key="section.title" dense class="mt-3">
           <v-col cols="12" class="text-subtitle-2">{{ section.title }}</v-col>
@@ -223,7 +222,7 @@ const endpointMeta = (info: any) => {
   ].filter(Boolean)
   return parts.join(' · ')
 }
-const connectionMeta = (item: any) => item ? (endpointMeta(item.sourceInfo) || endpointMeta(item.destinationInfo) || endpointMeta(item.remoteInfo)) : ''
+const connectionMeta = (item: any) => item ? (endpointMeta(item.sourceInfo) || endpointMeta(item.destinationInfo)) : ''
 const scopeLabel = (scope: string) => {
   const key = ({
     private: 'analytics.scopePrivate',
@@ -243,7 +242,6 @@ const endpointSections = (item: any) => {
   const endpoints = [
     { title: t('analytics.source'), info: item.sourceInfo },
     { title: t('analytics.destination'), info: item.destinationInfo },
-    { title: t('analytics.remote'), info: item.remoteInfo },
   ].filter((entry, index, source) => entry.info && source.findIndex(other => sameEndpoint(entry.info, other.info)) === index)
   return endpoints.map(entry => ({
     title: entry.title,
