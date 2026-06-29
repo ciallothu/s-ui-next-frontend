@@ -67,8 +67,8 @@ const defaultValues: Record<SrvType, Srv> = {
   derp: <DERP>{ type: 'derp', listen: '::', listen_port: 8443, config_path: '', tls_id:0 },
   resolved: <Resolved>{ type: 'resolved', listen: '::', listen_port: 53 },
   'ssm-api': <SSMAPI>{ type: 'ssm-api', listen: '::', listen_port: 8080, tls_id: 0, servers: {} },
-  ocm: { type: 'ocm', id: 0, tag: '', listen: '::', listen_port: 8080, tls_id: 0, users: [] } as OCM,
-  ccm: { type: 'ccm', id: 0, tag: '', listen: '::', listen_port: 8080, tls_id: 0, users: [] } as CCM,
+  ocm: { type: 'ocm', id: 0, tag: '', listen: '::', listen_port: 8080, tls_id: 0, credential_path: '', usages_path: '', users: [], headers: {} } as OCM,
+  ccm: { type: 'ccm', id: 0, tag: '', listen: '::', listen_port: 8080, tls_id: 0, credential_path: '', usages_path: '', users: [], headers: {} } as CCM,
 }
 
 export function createSrv<T extends Srv>(type: string, json?: Partial<T>): Srv {
