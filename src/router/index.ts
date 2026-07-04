@@ -2,6 +2,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Login from '@/views/Login.vue'
 import Data from '@/store/modules/data'
+import api from '@/plugins/api'
 
 const routes = [
   {
@@ -89,13 +90,21 @@ const DEFAULT_TITLE = 'S-UI Next'
 let intervalId:any
 
 // Navigation guard to check authentication state
-router.beforeEach((to) => {
-  // Check the session cookie
-  const sessionCookie = document.cookie.split(';').find(cookie => cookie.trim().startsWith('s-ui-next='))
-  const isAuthenticated = !!sessionCookie
+const checkAuthenticated = async () => {
+  try {
+    const response = await api.get('api/auth-check')
+    return response.data?.success === true && response.data?.obj?.authenticated === true
+  } catch {
+    return false
+  }
+}
+
+router.beforeEach(async (to) => {
+  const requiresAuth = to.matched.some(route => route.meta.requiresAuth)
+  const isAuthenticated = await checkAuthenticated()
 
   // If the route requires authentication and the user is not authenticated, redirect to /login
-  if (to.meta.requiresAuth && !isAuthenticated) {
+  if (requiresAuth && !isAuthenticated) {
     return '/login'
   }
   if (to.path === '/login' && isAuthenticated) {
