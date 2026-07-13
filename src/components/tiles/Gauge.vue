@@ -29,8 +29,11 @@ const gaugeData = (d:any) :any => {
   const total = HumanReadable.sizeFormat(d.total,0).split(' ')
   if (curr[1] == total[1]) curr[1] = ''
   return {
-    percent: Math.ceil(d.current*100/d.total),
-    text: curr[0] + "<sup>" + (curr[1]?? ' ') + "</sup>/" +  total[0] + "<sup>" + (total[1]?? '') + "</sup>"
+    percent: d.total > 0 ? Math.ceil(d.current*100/d.total) : 0,
+    current: curr[0],
+    currentUnit: curr[1] ?? '',
+    total: total[0],
+    totalUnit: total[1] ?? '',
   }
 }
 
@@ -58,7 +61,12 @@ const gaugeColor = computed(() => {
           background: `rgb(var(--v-theme-${gaugeColor}))`
           }">
       </div>
-      <div class="gauge__cover"><span dir="ltr" v-html="data.text"></span></div>
+      <div class="gauge__cover">
+        <span v-if="data.current" dir="ltr">
+          {{ data.current }}<sup>{{ data.currentUnit }}</sup>/{{ data.total }}<sup>{{ data.totalUnit }}</sup>
+        </span>
+        <span v-else dir="ltr">{{ data.text }}</span>
+      </div>
     </div>
   </div>
 </template>

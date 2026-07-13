@@ -193,7 +193,10 @@ const outbounds = computed((): Outbound[] => {
 })
 
 const outboundTags = computed((): string[] => {
-  return [...Data().outbounds?.map((o:Outbound) => o.tag), ...Data().endpoints?.map((e:any) => e.tag)]
+  return [
+    ...(Data().outbounds ?? []).map((o:Outbound) => o.tag),
+    ...(Data().endpoints ?? []).map((e:any) => e.tag),
+  ]
 })
 
 const onlines = computed(() => {
@@ -206,7 +209,7 @@ const modal = ref({
   data: "",
 })
 
-let delOverlay = ref(new Array<boolean>)
+const delOverlay = ref(new Array<boolean>)
 
 const showModal = (id: number) => {
   modal.value.id = id

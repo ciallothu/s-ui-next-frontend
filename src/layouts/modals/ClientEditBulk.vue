@@ -172,11 +172,12 @@ export default {
             c.inbounds = c.inbounds.filter((i: number) => !this.editData.inboundTags.includes(i))
           })
           break
-        case 'delete_bulk':
+        case 'delete_bulk': {
           const success = await Data().save("clients", "delbulk", targetClients.map((c: Client) => c.id))
           if (success) this.closeModal()
           this.loading = false
           return
+        }
       }
       const success = await Data().save("clients", 'editbulk', targetClients)
       if (success) this.closeModal()

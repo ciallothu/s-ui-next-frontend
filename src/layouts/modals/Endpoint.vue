@@ -161,7 +161,7 @@ export default {
       // Use previous data
       let prevConfig = {}
       switch (this.endpoint.type) {
-        case EpTypes.Wireguard:
+        case EpTypes.Wireguard: {
           const wgKeys = (await this.genWgKey())
           const listenPort = this.endpoint.listen_port ?? RandomUtil.randomIntRange(10000, 60000)
           prevConfig = {
@@ -188,6 +188,7 @@ export default {
             }
           }
           break
+        }
         case EpTypes.Warp:
           prevConfig = {
             tag: tag,
@@ -220,7 +221,7 @@ export default {
       this.loading = true
       const msg = await HttpUtils.get('api/keypairs', { k: "wireguard" })
       this.loading = false
-      let result = { private_key: "", public_key: "" }
+      const result = { private_key: "", public_key: "" }
       if (msg.success) {
         msg.obj.forEach((line:string) => {
           if (line.startsWith("PrivateKey")){

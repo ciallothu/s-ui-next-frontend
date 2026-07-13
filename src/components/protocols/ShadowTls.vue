@@ -61,6 +61,7 @@
     </v-row>
     <v-card
       v-for="(value, key) in Inbound.handshake_for_server_name"
+      :key="key"
       border
       density="compact"
       style="margin: 5px;"
@@ -120,7 +121,6 @@ export default {
   computed: {
     version: {
       get() {
-        this.version = this.Inbound.version
         return this.Inbound.version
       },
       set(newValue: any) {

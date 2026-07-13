@@ -424,8 +424,8 @@ export default {
         this.inTls.certificate_path=undefined
         this.usePath = 1
         if (msg.obj.length>0){
-          let privateKey = <string[]>[]
-          let publicKey = <string[]>[]
+          const privateKey = <string[]>[]
+          const publicKey = <string[]>[]
           let isPrivateKey = false
           let isPublicKey = false
 

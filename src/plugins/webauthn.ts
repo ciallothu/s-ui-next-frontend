@@ -58,17 +58,31 @@ const unwrap = (response: any) => {
   return value.obj
 }
 
-const passkeyName = (credential: PublicKeyCredential): string => {
+type ClientPlatform = 'windows' | 'macos' | 'ios' | 'android' | 'chromeos' | 'linux' | 'unknown'
+
+const clientPlatform = (): ClientPlatform => {
+  const userAgentPlatform = (navigator as Navigator & { userAgentData?: { platform?: string } }).userAgentData?.platform ?? ''
+  const source = `${userAgentPlatform} ${navigator.platform ?? ''} ${navigator.userAgent}`.toLowerCase()
+  if (/iphone|ipad|ipod|\bios\b/.test(source)) return 'ios'
+  if (/android/.test(source)) return 'android'
+  if (/cros/.test(source)) return 'chromeos'
+  if (/windows|win32|win64/.test(source)) return 'windows'
+  if (/macintosh|macintel|macos|mac os/.test(source)) return 'macos'
+  if (/linux/.test(source)) return 'linux'
+  return 'unknown'
+}
+
+const passkeyName = (credential: PublicKeyCredential, platform: ClientPlatform): string => {
   const response: any = credential.response
   const transports: string[] = typeof response.getTransports === 'function' ? response.getTransports() : []
   const attachment = credential.authenticatorAttachment
-  const ua = navigator.userAgent.toLowerCase()
-  const platform = ((navigator as any).userAgentData?.platform ?? navigator.platform ?? '').toLowerCase()
-  if (transports.some(item => ['usb', 'nfc', 'ble', 'hybrid'].includes(item))) return i18n.global.t('security.securityKey')
+  if (transports.some(item => ['usb', 'nfc', 'ble', 'smart-card'].includes(item)) || attachment === 'cross-platform') {
+    return i18n.global.t('security.securityKey')
+  }
   if (attachment === 'platform') {
-    if (/iphone|ipad|mac|ios/.test(platform) || /safari/.test(ua) && !/chrome|chromium|edg\//.test(ua)) return i18n.global.t('security.icloudKeychain')
-    if (/android/.test(platform) || /android/.test(ua) || /chrome|chromium/.test(ua)) return i18n.global.t('security.googlePasswordManager')
-    if (/windows/.test(platform) || /windows/.test(ua)) return i18n.global.t('security.windowsHello')
+    if (platform === 'windows') return i18n.global.t('security.windowsHello')
+    if (platform === 'macos' || platform === 'ios') return i18n.global.t('security.icloudKeychain')
+    if (platform === 'android' || platform === 'chromeos') return i18n.global.t('security.googlePasswordManager')
     return i18n.global.t('security.platformPasskey')
   }
   return i18n.global.t('security.passkey')
@@ -78,11 +92,14 @@ export async function registerPasskey(name = '') {
   const begin = unwrap(await api.get('api/passkey-register-begin'))
   const credential = await navigator.credentials.create({ publicKey: publicKeyOptions(begin.options, true) as PublicKeyCredentialCreationOptions }) as PublicKeyCredential | null
   if (!credential) throw new Error(i18n.global.t('security.passkeyCancelled'))
-  const finalName = name || passkeyName(credential)
-  unwrap(await api.post(`api/passkey-register-finish?sessionId=${encodeURIComponent(begin.sessionId)}&name=${encodeURIComponent(finalName)}`, serialize(credential), {
+  const platform = clientPlatform()
+  const fallbackName = passkeyName(credential, platform)
+  const params = new URLSearchParams({ sessionId: begin.sessionId, platform })
+  if (name.trim()) params.set('name', name.trim())
+  const result = unwrap(await api.post(`api/passkey-register-finish?${params.toString()}`, serialize(credential), {
     headers: { 'Content-Type': 'application/json', 'X-WebAuthn-Session': begin.sessionId },
   }))
-  return finalName
+  return result?.name || name.trim() || fallbackName
 }
 
 export async function loginWithPasskey(username: string) {

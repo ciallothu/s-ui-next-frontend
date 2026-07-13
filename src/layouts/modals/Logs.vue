@@ -41,7 +41,9 @@
             </v-btn>
           </v-col>
         </v-row>
-        <v-card style="background-color: background" dir="ltr" v-html="lines.join('<br />')"></v-card>
+        <v-card class="log-lines" dir="ltr">
+          <div v-for="(line, index) in lines" :key="index" class="log-line">{{ line }}</div>
+        </v-card>
       </v-card-text>
     </v-card>
   </v-dialog>
@@ -55,7 +57,7 @@ export default {
   data() {
     return {
       loading: false,
-      lines: [],
+      lines: [] as string[],
       logLevel: 'info',
       logLevels: [
         { title: 'DEBUG', value: 'debug' },
@@ -69,9 +71,12 @@ export default {
   methods: {
     async loadData() {
       this.loading = true
-      const data = await HttpUtils.get('api/logs',{ c: this.logCount, l: this.logLevel })
-      if (data.success) {
-        this.lines = data.obj?? []
+      try {
+        const data = await HttpUtils.get('api/logs',{ c: this.logCount, l: this.logLevel })
+        if (data.success) {
+          this.lines = Array.isArray(data.obj) ? data.obj.map(String) : []
+        }
+      } finally {
         this.loading = false
       }
     }
@@ -88,3 +93,8 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+.log-lines { max-height: 60vh; overflow: auto; padding: 12px; background: rgb(var(--v-theme-surface-variant)); }
+.log-line { white-space: pre-wrap; overflow-wrap: anywhere; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+</style>

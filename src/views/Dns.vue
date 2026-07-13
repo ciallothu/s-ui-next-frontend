@@ -264,7 +264,10 @@ const saveConfig = async () => {
 }
 
 const inboundTags = computed((): string[] => {
-  return [...Data().inbounds?.map((o:any) => o.tag), ...Data().endpoints?.filter((e:any) => e.listen_port > 0).map((e:any) => e.tag)]
+  return [
+    ...(Data().inbounds ?? []).map((o:any) => o.tag),
+    ...(Data().endpoints ?? []).filter((e:any) => e.listen_port > 0).map((e:any) => e.tag),
+  ]
 })
 
 const dns = computed((): any => {
@@ -289,8 +292,8 @@ const ruleSets = computed((): string[] => {
   return appConfig.value?.route?.rule_set?.map((r:any) => r.tag) ?? []
 })
 
-let delDnsOverlay = ref(new Array<boolean>)
-let delDnsRuleOverlay = ref(new Array<boolean>)
+const delDnsOverlay = ref(new Array<boolean>)
+const delDnsRuleOverlay = ref(new Array<boolean>)
 
 const dnsModal = ref({
   visible: false,

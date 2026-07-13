@@ -16,7 +16,7 @@
           {{ $t('objects.' + resource) + " : " + tag }}
         </div>
         <v-radio-group v-model="limit" @change="changePeriod" density="compact" :loading="loading" inline hide-details>
-          <v-radio v-for="p in periods" :label="p.title" :value="p.value"></v-radio>
+          <v-radio v-for="p in periods" :key="p.value" :label="p.title" :value="p.value"></v-radio>
         </v-radio-group>
           <v-container id="container" style="height:40vh;">
             <v-skeleton-loader
@@ -27,7 +27,7 @@
           ></v-skeleton-loader>
           <template v-else>
             <v-alert :text="$t('noData')" type="warning" variant="outlined" v-if="alert"></v-alert>
-            <Line v-if="loaded" :data="usage" :options="<any>options" />
+            <LineChart v-if="loaded" :data="usage" :options="<any>options" />
           </template>
         </v-container>
       </v-card-text>
@@ -51,7 +51,7 @@ import {
   Filler,
 } from 'chart.js'
 import { ref } from 'vue'
-import { Line } from 'vue-chartjs'
+import { Line as LineChart } from 'vue-chartjs'
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -65,7 +65,7 @@ ChartJS.register(
 ChartJS.defaults.font.family = 'Vazirmatn'
 export default {
   components: {
-    Line
+    LineChart
   },
   props: ['visible','resource','tag'],
   data() {
@@ -127,7 +127,7 @@ export default {
             },
             beginAtZero: true,
             ticks: {
-              callback: function(label:any, index: number) {
+              callback: function(label:any) {
                 return label == 0 ? 0 : HumanReadable.sizeFormat(label,0)
               },
               count: 10
@@ -153,16 +153,18 @@ export default {
           steps.push(now - (oneStep * i))
         }
         const labels = <string[]>[]
-        const uplinkData = <number[]>[]
-        const downlinkData = <number[]>[]
+        const uplinkData: Array<number | null> = []
+        const downlinkData: Array<number | null> = []
         for (let i = 1; i<360; i++) {
           labels.push(this.genLable(steps[i],l))
-          let upSum:number
-          let downSum:number
           const upTraffics = obj.filter(o => o.direction && o.dateTime*1000 < steps[i] && o.dateTime*1000 > steps[i-1]).map((o:any) => o.traffic)
-          upSum = upTraffics.length>0 ? upTraffics.reduce(u => u) : null
+          const upSum = upTraffics.length > 0
+            ? upTraffics.reduce((sum:number, value:number) => sum + value, 0)
+            : null
           const downTraffics = obj.filter(o => !o.direction && o.dateTime*1000 < steps[i] && o.dateTime*1000 > steps[i-1]).map((o:any) => o.traffic)
-          downSum = downTraffics.length>0 ? downTraffics.reduce(d => d) : null
+          const downSum = downTraffics.length > 0
+            ? downTraffics.reduce((sum:number, value:number) => sum + value, 0)
+            : null
           uplinkData.push(upSum)
           downlinkData.push(downSum)
         }

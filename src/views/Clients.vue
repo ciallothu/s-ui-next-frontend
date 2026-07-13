@@ -51,13 +51,13 @@
             <template v-slot:prepend>
               <v-icon icon="mdi-account-multiple-plus"></v-icon>
             </template>
-            <v-list-item-title v-text="$t('actions.addbulk')"></v-list-item-title>
+            <v-list-item-title>{{ $t('actions.addbulk') }}</v-list-item-title>
           </v-list-item>
           <v-list-item link @click="editBulk">
             <template v-slot:prepend>
               <v-icon icon="mdi-account-multiple-check"></v-icon>
             </template>
-            <v-list-item-title v-text="$t('actions.editbulk')"></v-list-item-title>
+            <v-list-item-title>{{ $t('actions.editbulk') }}</v-list-item-title>
           </v-list-item>
         </v-list>
       </v-menu>
@@ -146,7 +146,7 @@
         <template v-slot:item.inbounds="{ item }">
           <span>
           <v-tooltip activator="parent" dir="ltr" location="start" v-if="item.inbounds != ''">
-            <span v-for="i in item.inbounds">{{ inbounds.find(inb => inb.id == i)?.tag }}<br /></span>
+            <span v-for="i in item.inbounds" :key="i">{{ inbounds.find(inb => inb.id == i)?.tag }}<br /></span>
           </v-tooltip>
           {{ item.inbounds?.length }}
           </span>

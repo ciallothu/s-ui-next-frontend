@@ -3,7 +3,7 @@
     <v-card-title class="d-flex align-center ga-2"><v-icon icon="mdi-text-box-search-outline" />{{ $t('logsView.title') }}<v-spacer /><v-btn icon="mdi-refresh" variant="tonal" @click="load" /></v-card-title>
     <v-card-text>
       <v-alert type="info" variant="tonal" class="mb-3">{{ $t('logsView.subtitle') }}</v-alert>
-      <v-row dense>
+      <v-row density="compact">
         <v-col cols="12" md="3"><v-text-field v-model="search" :label="$t('logsView.search')" prepend-inner-icon="mdi-magnify" clearable @keyup.enter="load" /></v-col>
         <v-col cols="12" md="2"><v-text-field v-model="user" :label="$t('logsView.user')" clearable @keyup.enter="load" /></v-col>
         <v-col cols="12" md="2"><v-select v-model="level" :label="$t('logsView.level')" :items="levels" @update:model-value="load" /></v-col>

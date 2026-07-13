@@ -83,10 +83,6 @@ const services = computed((): Srv[] => {
   return <Srv[]> Data().services
 })
 
-const srvTags = computed((): any[] => {
-  return services.value?.map((o:Srv) => o.tag)
-})
-
 const tsTags = computed((): any[] => {
   return Data().endpoints?.filter((o:any) => o.type == "tailscale")?.map((o:any) => o.tag)
 })
@@ -96,7 +92,10 @@ const ssTags = computed((): any[] => {
 })
 
 const inTags = computed((): any[] => {
-  return [...Data().inbounds?.map((o:any) => o.tag).filter(t => t != null), ...Data().endpoints?.filter((e:any) => e.listen_port > 0).map((e:any) => e.tag)]
+  return [
+    ...(Data().inbounds ?? []).map((o:any) => o.tag).filter(t => t != null),
+    ...(Data().endpoints ?? []).filter((e:any) => e.listen_port > 0).map((e:any) => e.tag),
+  ]
 })
 
 const tlsConfigs = computed((): any[] => {
@@ -109,7 +108,7 @@ const modal = ref({
   data: "",
 })
 
-let delOverlay = ref(new Array<boolean>)
+const delOverlay = ref(new Array<boolean>)
 
 const showModal = (id: number) => {
   modal.value.id = id

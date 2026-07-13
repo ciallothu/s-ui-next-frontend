@@ -3,13 +3,13 @@
       <v-row justify="center" align="center">
         <v-col cols="12" sm="8" md="4">
           <v-card>
-            <v-card-title class="headline" v-text="$t('login.title')"></v-card-title>
+            <v-card-title class="headline">{{ $t('login.title') }}</v-card-title>
             <v-card-text>
               <v-form @submit.prevent="login" ref="form">
                 <v-text-field v-model="username" :label="$t('login.username')" :rules="usernameRules" required></v-text-field>
                 <v-text-field v-model="password" :label="$t('login.password')" :rules="passwordRules" type="password" required></v-text-field>
 				<v-text-field v-if="requires2FA" v-model="otp" :label="$t('auth.twoFactorCode')" autocomplete="one-time-code" autofocus required></v-text-field>
-                <v-btn :loading="loading" type="submit" color="primary" block class="mt-2" v-text="$t('actions.submit')"></v-btn>
+                <v-btn :loading="loading" type="submit" color="primary" block class="mt-2">{{ $t('actions.submit') }}</v-btn>
               </v-form>
 			  <v-btn v-if="authMethods.passkey" :disabled="!username" :loading="loading" block variant="tonal" class="mt-2" prepend-icon="mdi-passkey" @click="passkeyLogin">{{ $t('auth.passkey') }}</v-btn>
 			  <v-btn v-if="authMethods.oidc" :loading="loading" block variant="outlined" class="mt-2" prepend-icon="mdi-login-variant" @click="oidcLogin">{{ $t('auth.oidcSso') }}</v-btn>
@@ -96,20 +96,19 @@ onMounted(async () => {
 
 const login = async () => {
   if (username.value == '' || password.value == '') return
-  loading.value=true
-  const response = await HttpUtil.post('api/login',{user: username.value, pass: password.value, otp: otp.value})
-  if(response.success){
-	if (response.obj?.requires2FA) {
-	  requires2FA.value = true
-	  loading.value = false
-	  return
-	}
-    setTimeout(() => {
-      loading.value=false
-      router.push('/')
-    }, 500)
-  } else {
-    loading.value=false
+  loading.value = true
+  try {
+    const response = await HttpUtil.post('api/login',{user: username.value, pass: password.value, otp: otp.value})
+    if (!response.success) return
+    if (response.obj?.requires2FA) {
+      requires2FA.value = true
+      return
+    }
+    requires2FA.value = false
+    otp.value = ''
+    await router.replace('/')
+  } finally {
+    loading.value = false
   }
 }
 const oidcLogin = async () => {

@@ -120,7 +120,7 @@ export default {
     applyPreset() {
       const include4 = this.data.include_ipv4 !== false
       const include6 = this.data.include_ipv6 !== false
-      let values: string[] = []
+      let values: string[]
       switch (this.data.client_route_preset) {
         case 'full_tunnel': values = ['0.0.0.0/0', '::/0']; break
         case 'single_peer': {

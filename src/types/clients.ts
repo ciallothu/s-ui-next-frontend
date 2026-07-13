@@ -59,11 +59,11 @@ type Config = {
 
 export function updateConfigs(configs: Config, newUserName: string): Config {
   for (const key in configs) {
-    if (configs.hasOwnProperty(key)) {
+    if (Object.hasOwn(configs, key)) {
       const config = configs[key]
-      if (config.hasOwnProperty("name")) {
+      if (Object.hasOwn(config, "name")) {
         config.name = newUserName
-      } else if (config.hasOwnProperty("username")) {
+      } else if (Object.hasOwn(config, "username")) {
         config.username = newUserName
       }
     }

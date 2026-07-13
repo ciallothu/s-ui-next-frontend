@@ -2,6 +2,7 @@ import api from './api'
 import { i18n } from '@/locales'
 import router from '@/router'
 import { push } from 'notivue'
+import type { AxiosRequestConfig } from 'axios'
 
 export interface Msg {
   success: boolean
@@ -46,8 +47,8 @@ function _respToMsg(resp: any): Msg {
   if (data == null) {
     return { success: true, msg: "", obj: null }
   } else if (isMsg(data)) {
-    if (data.hasOwnProperty('success')) {
-        return { success: data.success, msg: data.msg, obj: data.obj || null }
+    if (Object.hasOwn(data, 'success')) {
+        return { success: data.success, msg: data.msg, obj: data.obj ?? null }
     } else {
         return data
     }
@@ -61,7 +62,7 @@ function isMsg(obj: any): obj is Msg {
 }
   
 const HttpUtils = {
-  async get(url: string, data: object = {}, options: any[] = []): Promise<Msg> {
+  async get(url: string, data: object = {}, options: AxiosRequestConfig = {}): Promise<Msg> {
     let msg: Msg
     try {
         const resp = await api.get(url, { params: data, ...options })

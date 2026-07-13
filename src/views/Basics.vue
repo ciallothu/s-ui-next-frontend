@@ -266,7 +266,10 @@ const saveConfig = async () => {
 }
 
 const inboundTags = computed((): string[] => {
-  return [...Data().inbounds?.map((i:any) => i.tag), ...Data().endpoints?.filter((e:any) => e.listen_port > 0).map((e:any) => e.tag)]
+  return [
+    ...(Data().inbounds ?? []).map((i:any) => i.tag),
+    ...(Data().endpoints ?? []).filter((e:any) => e.listen_port > 0).map((e:any) => e.tag),
+  ]
 })
 
 const clientNames = computed((): string[] => {
@@ -275,7 +278,10 @@ const clientNames = computed((): string[] => {
 })
 
 const outboundTags = computed((): string[] => {
-  return [...Data().outbounds?.map((o:any) => o.tag), ...Data().endpoints?.map((e:any) => e.tag)]
+  return [
+    ...(Data().outbounds ?? []).map((o:any) => o.tag),
+    ...(Data().endpoints ?? []).map((e:any) => e.tag),
+  ]
 })
 
 const levels = ["trace", "debug", "info", "warn", "error", "fatal", "panic"]
@@ -291,7 +297,11 @@ const enableNtp = computed({
 
 const ntpInterval = computed({
   get():any { return appConfig.value.ntp?.interval? parseInt(appConfig.value.ntp?.interval.replace('m','')) : null },
-  set(v:number) { if (appConfig.value.ntp) v>0 ? appConfig.value.ntp.interval =  v + 'm' : delete appConfig.value.ntp.interval }
+  set(v:number) {
+    if (!appConfig.value.ntp) return
+    if (v > 0) appConfig.value.ntp.interval = v + 'm'
+    else delete appConfig.value.ntp.interval
+  }
 })
 
 const enableCacheFile = computed({

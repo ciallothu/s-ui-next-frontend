@@ -52,13 +52,13 @@
             <template v-slot:prepend>
               <v-icon icon="mdi-routes"></v-icon>
             </template>
-            <v-list-item-title v-text="$t('rule.import.rulesTitle')"></v-list-item-title>
+            <v-list-item-title>{{ $t('rule.import.rulesTitle') }}</v-list-item-title>
           </v-list-item>
           <v-list-item link @click="showImportRulesets">
             <template v-slot:prepend>
               <v-icon icon="mdi-download-multiple"></v-icon>
             </template>
-            <v-list-item-title v-text="$t('rule.import.title')"></v-list-item-title>
+            <v-list-item-title>{{ $t('rule.import.title') }}</v-list-item-title>
           </v-list-item>
         </v-list>
       </v-menu>
@@ -190,7 +190,10 @@ onBeforeMount(async () => {
 
 const routeMark = computed({
   get() { return route.value.default_mark ?? 0 },
-  set(v:number) { v>0 ? route.value.default_mark = v : delete appConfig.value.route.default_mark }
+  set(v:number) {
+    if (v > 0) route.value.default_mark = v
+    else delete route.value.default_mark
+  }
 })
 
 const stateChange = computed(() => FindDiff.deepCompare(appConfig.value, oldConfig.value))
@@ -224,17 +227,17 @@ const rulesets = computed((): any[] => {
 const rulesetTags = computed((): string[] => rulesets.value.map((rs:any) => rs.tag))
 
 const outboundTags = computed((): string[] => [
-  ...Data().outbounds?.map((o:any) => o.tag),
-  ...Data().endpoints?.map((e:any) => e.tag)
+  ...(Data().outbounds ?? []).map((o:any) => o.tag),
+  ...(Data().endpoints ?? []).map((e:any) => e.tag)
 ])
 
 const inboundTags = computed((): string[] => [
-  ...Data().inbounds?.map((o:any) => o.tag),
-  ...Data().endpoints?.filter((e:any) => e.listen_port > 0).map((e:any) => e.tag)
+  ...(Data().inbounds ?? []).map((o:any) => o.tag),
+  ...(Data().endpoints ?? []).filter((e:any) => e.listen_port > 0).map((e:any) => e.tag)
 ])
 
-let delRuleOverlay = ref(new Array<boolean>)
-let delRulesetOverlay = ref(new Array<boolean>)
+const delRuleOverlay = ref(new Array<boolean>)
+const delRulesetOverlay = ref(new Array<boolean>)
 
 const ruleModal = ref({ visible: false, index: -1, data: "" })
 const showRuleModal = (index: number) => {

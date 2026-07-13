@@ -24,25 +24,27 @@ const Data = defineStore('Data', {
     async loadData() {
       const msg = await HttpUtils.get('api/load', this.lastLoad >0 ? {lu: this.lastLoad} : {} )
       if(msg.success) {
-        this.onlines = msg.obj.onlines
-        if (msg.obj.lastLog) {
+        const payload = msg.obj && typeof msg.obj === 'object' ? msg.obj : {}
+        const nextCursor = Number(payload.lastUpdate)
+        if (Number.isFinite(nextCursor) && nextCursor >= 0) this.lastLoad = nextCursor
+        if (Object.hasOwn(payload, 'onlines')) this.onlines = payload.onlines ?? { inbound: [], outbound: [], user: [] }
+        if (payload.lastLog) {
           push.error({
             title: i18n.global.t('error.core'),
             duration: 5000,
-            message: msg.obj.lastLog
+            message: payload.lastLog
           })
         }
         
-        if (msg.obj.config) {
-          this.setNewData(msg.obj)
+        if (Object.hasOwn(payload, 'config')) {
+          this.setNewData(payload)
         }
       }
     },
     setNewData(data: any) {
-      this.lastLoad = Math.floor((new Date()).getTime()/1000)
-      if (data.subURI) this.subURI = data.subURI
-      if (data.enableTraffic) this.enableTraffic = data.enableTraffic
-      if (data.config) this.config = data.config
+      if (Object.hasOwn(data, 'subURI')) this.subURI = data.subURI ?? ''
+      if (Object.hasOwn(data, 'enableTraffic')) this.enableTraffic = data.enableTraffic === true
+      if (Object.hasOwn(data, 'config')) this.config = data.config ?? {}
       if (Object.hasOwn(data, 'clients')) this.clients = data.clients ?? []
       if (Object.hasOwn(data, 'inbounds')) this.inbounds = data.inbounds ?? []
       if (Object.hasOwn(data, 'outbounds')) this.outbounds = data.outbounds ?? []
@@ -67,7 +69,7 @@ const Data = defineStore('Data', {
       return <Client>{}
     },
     async save (object: string, action: string, data: any, initUsers?: number[], apply = true): Promise<boolean> {
-      let postData = {
+      const postData = {
         object: object,
         action: action,
         data: JSON.stringify(data, null, 2),
@@ -112,7 +114,7 @@ const Data = defineStore('Data', {
     },
     // check duplicate tag
     checkTag (object: string, id: number, tag: string): boolean {
-      let objects = <any[]>[]
+      let objects: any[]
       switch (object) {
         case 'inbound':
           objects = this.inbounds

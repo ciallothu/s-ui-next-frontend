@@ -62,7 +62,7 @@
               @click:append="fetchFromUrl" />
           </v-window-item>
         </v-window>
-        <v-alert v-if="error" type="error" variant="text" v-html="error"></v-alert>
+        <v-alert v-if="error" type="error" variant="text" class="import-error">{{ error }}</v-alert>
 
         <template v-if="parsed">
           <v-divider class="my-4" />
@@ -257,3 +257,7 @@ export default {
   },
 }
 </script>
+
+<style scoped>
+.import-error { white-space: pre-wrap; overflow-wrap: anywhere; }
+</style>

@@ -113,13 +113,11 @@ import Dial from '@/components/Dial.vue'
 import Multiplex from '@/components/Multiplex.vue'
 import Transport from '@/components/Transport.vue'
 import OutTLS from '@/components/tls/OutTLS.vue'
-import Direct from '@/components/protocols/Direct.vue'
 import Socks from '@/components/protocols/Socks.vue'
 import Http from '@/components/protocols/Http.vue'
 import Shadowsocks from '@/components/protocols/Shadowsocks.vue'
 import Vmess from '@/components/protocols/Vmess.vue'
 import Trojan from '@/components/protocols/Trojan.vue'
-import Wireguard from '@/components/protocols/Wireguard.vue'
 import Hysteria from '@/components/protocols/Hysteria.vue'
 import Naive from '@/components/protocols/Naive.vue'
 import ShadowTls from '@/components/protocols/OutShadowTls.vue'
@@ -206,8 +204,8 @@ export default {
     },
   },
   components: { Dial, Multiplex, Transport, OutTLS,
-    Direct, Socks, Http, Shadowsocks, Vmess, Trojan,
-    Wireguard, Hysteria, Naive, ShadowTls, Vless, Tuic,
+    Socks, Http, Shadowsocks, Vmess, Trojan,
+    Hysteria, Naive, ShadowTls, Vless, Tuic,
     Hysteria2, AnyTls, Tor, Ssh, Selector, UrlTest }
 }
 </script>

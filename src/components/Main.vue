@@ -26,12 +26,12 @@
                 </v-row>
               </v-card-title>
               <v-divider></v-divider>
-              <v-row v-for="items in menuItems" density="compact">
+              <v-row v-for="items in menuItems" :key="items.title" density="compact">
                 <v-col cols="12">
                   <v-card :subtitle="items.title" variant="flat">
                     <v-card-text>
                       <v-row density="compact">
-                        <v-col cols="12" md="6" lg="3" v-for="item in items.value">
+                        <v-col cols="12" md="6" lg="3" v-for="item in items.value" :key="item.value">
                           <v-switch
                           density="compact"
                           v-model="reloadItems"
@@ -101,13 +101,13 @@
                   <v-col cols="9">
                     <v-chip density="compact" color="primary" variant="flat" v-if="tilesData.sys?.ipv4?.length>0">
                       <v-tooltip activator="parent" location="top" style="direction: ltr;">
-                        <span v-html="tilesData.sys?.ipv4?.join('<br />')"></span>
+                        <span v-for="address in tilesData.sys?.ipv4" :key="address" class="d-block">{{ address }}</span>
                       </v-tooltip>
                       IPv4
                     </v-chip>
                     <v-chip density="compact" color="primary" variant="flat" v-if="tilesData.sys?.ipv6?.length>0">
                       <v-tooltip activator="parent" location="top" style="direction: ltr;">
-                        <span v-html="tilesData.sys?.ipv6?.join('<br />')"></span>
+                        <span v-for="address in tilesData.sys?.ipv6" :key="address" class="d-block">{{ address }}</span>
                       </v-tooltip>
                       IPv6
                     </v-chip>
@@ -158,21 +158,21 @@
                       <v-chip density="compact" color="primary" variant="flat" v-if="Data().onlines.user">
                         <v-tooltip activator="parent" location="top" overflow="auto">
                           <span v-text="$t('pages.clients')" style="font-weight: bold;"></span><br/>
-                          <span v-for="user in Data().onlines.user">{{ user }}<br /></span>
+                          <span v-for="user in Data().onlines.user" :key="user">{{ user }}<br /></span>
                         </v-tooltip>
                         {{ Data().onlines.user?.length }}
                       </v-chip>
                       <v-chip density="compact" color="success" variant="flat" v-if="Data().onlines.inbound">
                         <v-tooltip activator="parent" location="top" :text="$t('pages.inbounds')">
                           <span v-text="$t('pages.inbounds')" style="font-weight: bold;"></span><br/>
-                          <span v-for="i in Data().onlines.inbound">{{ i }}<br /></span>
+                          <span v-for="i in Data().onlines.inbound" :key="i">{{ i }}<br /></span>
                         </v-tooltip>
                         {{ Data().onlines.inbound?.length }}
                       </v-chip>
                       <v-chip density="compact" color="info" variant="flat" v-if="Data().onlines.outbound">
                         <v-tooltip activator="parent" location="top" :text="$t('pages.outbounds')">
                           <span v-text="$t('pages.outbounds')" style="font-weight: bold;"></span><br/>
-                          <span v-for="o in Data().onlines.outbound">{{ o }}<br /></span>
+                          <span v-for="o in Data().onlines.outbound" :key="o">{{ o }}<br /></span>
                         </v-tooltip>
                         {{ Data().onlines.outbound?.length }}
                       </v-chip>
@@ -233,16 +233,18 @@ const reloadItems = computed({
     if (Data().reloadItems.length == 0 && v.length>0) startTimer()
     if (Data().reloadItems.length > 0 && v.length == 0) stopTimer()
     Data().reloadItems = v
-    v.length>0 ? localStorage.setItem("reloadItems",v.join(',')) : localStorage.removeItem("reloadItems")
+    if (v.length > 0) localStorage.setItem("reloadItems", v.join(','))
+    else localStorage.removeItem("reloadItems")
   }
 })
 
 const reloadData = async () => {
-  const request = [...new Set(reloadItems.value.map(r => r.split('-')[1]))]
-  if (tilesData.value?.sys?.appVersion) request.filter(r => r != 'sys')
+  let request = [...new Set(reloadItems.value.map(r => r.split('-')[1]))]
+  if (tilesData.value?.sys?.appVersion) request = request.filter(r => r != 'sys')
+  if (request.length === 0) return
   const data = await HttpUtils.get('api/status',{ r: request.join(',')})
-  if (data.success) {
-    tilesData.value = data.obj
+  if (data.success && data.obj && typeof data.obj === 'object') {
+    tilesData.value = { ...tilesData.value, ...data.obj }
   }
 }
 
@@ -256,6 +258,7 @@ const reloadSys = async () => {
 let intervalId: ReturnType<typeof setInterval> | null = null
 
 const startTimer = () => {
+  if (intervalId) return
   intervalId = setInterval(() => {
     reloadData()
   }, 2000)
