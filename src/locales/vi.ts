@@ -748,7 +748,7 @@ export default {
     destination: "Đích",
     source: "Nguồn",
     remote: "Từ xa",
-    ipAddress: "Địa chỉ IP",
+    ipAddress: "Địa chỉ IP / tên miền",
     ipAttribution: "Thuộc về",
     isp: "ISP / chủ sở hữu",
     asn: "ASN",

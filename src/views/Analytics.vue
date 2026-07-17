@@ -161,6 +161,7 @@
 
   <v-dialog v-model="connectionLogVisible" max-width="880">
     <v-card :title="$t('analytics.connectionLog')">
+      <v-progress-linear v-if="connectionLogResolving" indeterminate />
       <v-card-text v-if="selectedConnection">
         <v-row density="compact">
           <v-col cols="12" md="6"><strong>{{ $t('logsView.time') }}:</strong> {{ selectedConnection.time || formatTime(selectedConnection.timestamp) }}</v-col>
@@ -199,7 +200,8 @@ const connectionData = ref<any>({ items: [], summary: {}, scanned: 0 })
 const logItems = ref<any[]>([])
 const detailVisible = ref(false), detailTitle = ref(''), detailItems = ref<any[]>([])
 const detailLoading = ref(false)
-const connectionLogVisible = ref(false), selectedConnection = ref<any>(null)
+const connectionLogVisible = ref(false), connectionLogResolving = ref(false), selectedConnection = ref<any>(null)
+let connectionLogRequest = 0
 const levels = ['ALL', 'DEBUG', 'INFO', 'WARNING', 'ERROR']
 const resources = computed(() => [
   { title: t('analytics.users'), value: 'user' },
@@ -255,16 +257,27 @@ const chartOptions: any = { responsive: true, maintainAspectRatio: false, intera
 const bytes = (value: any) => HumanReadable.sizeFormat(Number(value || 0))
 const formatTime = (value: number) => value ? new Date(value * 1000).toLocaleString() : '—'
 const levelColor = (value: string) => ({ DEBUG: 'secondary', INFO: 'info', WARNING: 'warning', ERROR: 'error' } as any)[value] ?? 'default'
-const endpointMeta = (info: any) => {
+const endpointTarget = (info: any) => info?.host || info?.ip || info?.address || ''
+const endpointOwnership = (info: any) => {
   if (!info) return ''
-  const parts = [
-    info.ip || info.host,
-    info.attribution || scopeLabel(info.scope),
-    info.isp,
-  ].filter(Boolean)
+  const parts: string[] = []
+  const add = (value: any) => {
+    const text = String(value || '').trim()
+    if (text && !parts.some(item => item.toLocaleLowerCase() === text.toLocaleLowerCase())) parts.push(text)
+  }
+  if (info.isp) add(info.isp)
+  else if (info.scope !== 'domain') add(info.attribution)
+  add(info.city || info.region || info.country)
+  if (info.ip && info.ip !== endpointTarget(info)) add(info.ip)
+  if (!parts.length && info.scope !== 'domain') add(scopeLabel(info.scope))
   return parts.join(' · ')
 }
-const connectionMeta = (item: any) => item ? (endpointMeta(item.sourceInfo) || endpointMeta(item.destinationInfo)) : ''
+const endpointMeta = (info: any) => {
+  if (!info) return ''
+  const parts = [endpointTarget(info), endpointOwnership(info)].filter(Boolean)
+  return parts.join(' · ')
+}
+const connectionMeta = (item: any) => item ? (endpointMeta(item.destinationInfo) || endpointMeta(item.sourceInfo)) : ''
 const scopeLabel = (scope: string) => {
   const key = ({
     private: 'analytics.scopePrivate',
@@ -288,12 +301,8 @@ const endpointSections = (item: any) => {
   return endpoints.map(entry => ({
     title: entry.title,
     fields: [
-      { label: t('analytics.ipAddress'), value: entry.info.ip || entry.info.host },
-      { label: t('analytics.ipAttribution'), value: entry.info.attribution || scopeLabel(entry.info.scope) },
-      { label: t('analytics.isp'), value: entry.info.isp },
-      { label: t('analytics.asn'), value: entry.info.asn },
-      { label: t('analytics.country'), value: entry.info.country },
-      { label: t('analytics.network'), value: entry.info.network },
+      { label: t('analytics.ipAddress'), value: endpointTarget(entry.info) },
+      { label: t('analytics.ipAttribution'), value: endpointOwnership(entry.info) },
     ].filter(field => field.value),
   })).filter(entry => entry.fields.length)
 }
@@ -309,9 +318,30 @@ const openConnections = async (nextResource: string, nextTag: string) => {
     detailLoading.value = false
   }
 }
-const openConnectionLog = (item: any) => {
-  selectedConnection.value = item
+const openConnectionLog = async (item: any) => {
+  const requestId = ++connectionLogRequest
+  selectedConnection.value = { ...item }
   connectionLogVisible.value = true
+  connectionLogResolving.value = false
+  const address = item.destination || item.source
+  const infoKey = item.destination ? 'destinationInfo' : item.source ? 'sourceInfo' : ''
+  const currentInfo = infoKey ? item[infoKey] : null
+  const hasLocation = currentInfo?.city || currentInfo?.region || currentInfo?.country
+  const needsPublicLookup = currentInfo && ['domain', 'public'].includes(currentInfo.scope)
+  const complete = Boolean(currentInfo && (!needsPublicLookup || (currentInfo.ip && currentInfo.isp && hasLocation)))
+  if (!address || !infoKey || complete) return
+  connectionLogResolving.value = true
+  try {
+    const response = await HttpUtils.get('api/analytics-address-info', { address })
+    if (requestId !== connectionLogRequest || !response.success || !selectedConnection.value) return
+    const next = { ...selectedConnection.value, [infoKey]: response.obj }
+    if (infoKey === 'destinationInfo' && next.remote === next.destination) next.remoteInfo = response.obj
+    selectedConnection.value = next
+  } catch {
+    // Leave the original connection details visible when lookup is unavailable.
+  } finally {
+    if (requestId === connectionLogRequest) connectionLogResolving.value = false
+  }
 }
 watch(tab, () => { if (tab.value === 'usage') resource.value = 'all'; load() })
 onMounted(load)

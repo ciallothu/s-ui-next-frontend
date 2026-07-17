@@ -805,7 +805,7 @@ export default {
     destination: "目标",
     source: "来源",
     remote: "远端",
-    ipAddress: "IP 地址",
+    ipAddress: "IP 地址 / 域名",
     ipAttribution: "归属",
     isp: "运营商 / 归属方",
     asn: "ASN",

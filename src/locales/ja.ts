@@ -215,7 +215,7 @@ export default {
     destination: "宛先",
     source: "送信元",
     remote: "リモート",
-    ipAddress: "IP アドレス",
+    ipAddress: "IP アドレス / ドメイン",
     ipAttribution: "帰属",
     isp: "ISP / 所有者",
     asn: "ASN",

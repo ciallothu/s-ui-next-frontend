@@ -749,7 +749,7 @@ export default {
     destination: "Назначение",
     source: "Источник",
     remote: "Удалённый",
-    ipAddress: "IP-адрес",
+    ipAddress: "IP-адрес / домен",
     ipAttribution: "Принадлежность",
     isp: "ISP / владелец",
     asn: "ASN",
