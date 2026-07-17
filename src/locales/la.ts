@@ -194,7 +194,7 @@ export default {
     destination: "Destinatio",
     source: "Fons",
     remote: "Remotum",
-    ipAddress: "Oratio IP",
+    ipAddress: "Oratio IP / dominium",
     ipAttribution: "Attributio",
     isp: "ISP / dominus",
     asn: "ASN",

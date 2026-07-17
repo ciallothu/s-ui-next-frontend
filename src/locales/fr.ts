@@ -194,7 +194,7 @@ export default {
     destination: "Destination",
     source: "Source",
     remote: "Distant",
-    ipAddress: "Adresse IP",
+    ipAddress: "Adresse IP / domaine",
     ipAttribution: "Attribution",
     isp: "FAI / propriétaire",
     asn: "ASN",

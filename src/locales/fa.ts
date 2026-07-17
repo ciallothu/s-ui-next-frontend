@@ -748,7 +748,7 @@ export default {
     destination: "مقصد",
     source: "منبع",
     remote: "ریموت",
-    ipAddress: "نشانی IP",
+    ipAddress: "نشانی IP / دامنه",
     ipAttribution: "وابستگی",
     isp: "ISP / مالک",
     asn: "ASN",

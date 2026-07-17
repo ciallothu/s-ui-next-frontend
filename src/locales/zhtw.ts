@@ -757,7 +757,7 @@ export default {
     destination: "目標",
     source: "來源",
     remote: "遠端",
-    ipAddress: "IP 位址",
+    ipAddress: "IP 位址 / 網域",
     ipAttribution: "歸屬",
     isp: "ISP / 歸屬方",
     asn: "ASN",

@@ -807,7 +807,7 @@ export default {
     destination: "Destination",
     source: "Source",
     remote: "Remote",
-    ipAddress: "IP address",
+    ipAddress: "IP address / domain",
     ipAttribution: "Attribution",
     isp: "ISP / owner",
     asn: "ASN",
